@@ -7,12 +7,12 @@ A Vim plugin for better Haskell folding and auto-indenting.
 Installation
 ============
 
-If you use [pathogen.vim](https://github.com/tpope/vim-pathogen), simply run:
+If you use [pathogen.vim](https://github.com/tpope/vim-pathogen), simply run::
 
     cd ~/.vim/bundle
     hg clone https://bitbucket.org/merijnv/haskellfoldindent
 
-or
+or::
 
     cd ~/.vim/bundle
     git clone git://github.com/merijn/haskellFoldIndent.git
@@ -34,20 +34,21 @@ Features & Examples
 Data declarations
 -----------------
 
-Multiline data declarations will automatically line up with the equals sign:
+Multiline data declarations will automatically line up with the equals sign::
 
     data Foo a b = Foo a
                  | Bar b
                  | Baz a b
 
-Typing a { on the first line after a declaration will align with the type name.
+Typing a { on the first line after a declaration will align with the type
+name::
 
     data Foo a b =
          { someA :: a
          , someB :: b
          }
 
-GADT declarations will indent by shiftwidth spaces, so with shiftwidth=4
+GADT declarations will indent by shiftwidth spaces, so with shiftwidth=4::
 
     data Foo a b where
         Bar :: a -> b -> Foo a b
@@ -57,7 +58,7 @@ Type Signatures
 ---------------
 
 Typing -> or => on the first line after a type signature will automatically
-line up with the :: symbol:
+line up with the :: symbol::
 
     foo :: Monad m
         => (Double, Double)
@@ -67,7 +68,7 @@ Automatic Block Indent
 ----------------------
 
 Ending a line with do, case X of, or \case (when using LambdaCase) will
-increase the indent level by shiftwidth
+increase the indent level by shiftwidth::
 
     foo a b = do
         return (a + b)
@@ -86,7 +87,7 @@ increase the indent level by shiftwidth
 
 The automatic block indentation also:
 
-Class and instance definitions:
+Class and instance definitions::
 
     class Foo a where
         foo :: a -> a
@@ -94,7 +95,7 @@ Class and instance definitions:
     instance Foo Int where
         foo x = x
 
-Type & data family blocks:
+Type & data family blocks::
 
     type family Elem e (es :: '[*]) :: Bool
 
@@ -115,12 +116,12 @@ Foreign import/exports
 ----------------------
 
 If a foreign import export line ends with a quoted text instead of a type
-signature, the next line will be indented.
+signature, the next line will be indented::
 
     foreign import ccall unsafe "string.h strerror"
         str_error :: CInt -> CString
 
-Of course, automatically lining up type signatures works here too:
+Of course, automatically lining up type signatures works here too::
 
     foreign import ccall "unistd.h execve"
         execve :: CString
@@ -159,5 +160,10 @@ Desirable features:
 Broken, won't fix
 -----------------
 
-   * case-of split over multiple lines (case and of should be on the same line)
-   * dangling else (entire if/then/else on one line *or* all on separate lines)
+split case-of
+    case-of where the case and of are on separate lines are not accounted for.
+    This is ugly anyway, so don't do it.
+
+dangling else
+    An if/then/else should either be entirely on one line *or* have a separate
+    line for each if the three components.
