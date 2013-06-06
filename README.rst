@@ -85,7 +85,7 @@ increase the indent level by shiftwidth::
         bar <- do
             blah blah
 
-The automatic block indentation also:
+The automatic block indentation also handles...
 
 Class and instance definitions::
 
