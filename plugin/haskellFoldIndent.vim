@@ -9,6 +9,11 @@ if exists("g:HaskellFoldIndent")
 endif
 let g:HaskellFoldIndent = 1
 
+" Calculate the length of a prefix
+fun! PrefixLen(line, pattern)
+    return strlen(substitute(a:line, a:pattern, '\1', ''))
+endfunction
+
 " Used to check whether something is a function/value definition
 fun! ValidTopLevel(line)
     return a:line =~ '\v^(data|newtype|type|foreign|import|module|class|infix)'
@@ -18,37 +23,38 @@ endfunction
 " Figure out the indent level of a line
 fun! BaseIndent(line)
     if a:line =~ '^\s*where '
-        return strlen(substitute(a:line, '\v^(\s*where ).*$', '\1', ''))
+        return PrefixLen(a:line, '\v^(\s*where ).*$')
+    elseif a:line =~ '\v^.* do( do )@! \S*(( do )@!.)*$'
+        return PrefixLen(a:line, '\v^(.* do( do )@! )\S*(( do )@!.)*$')
     else
-        return strlen(substitute(a:line, '\v^(\s*)\S.*$', '\1', ''))
+        return PrefixLen(a:line, '\v^(\s*)\S.*$')
     endif
 endfunction
 
 " Figure out how far to indent type signatures
 fun! SigIndent(line)
     if a:line =~ '\v^(( :: )@!.)* :: .*$'
-        return strlen(substitute(a:line, '\v^((( :: )@!.)* ):: .*$', '\1', ''))
+        return PrefixLen(a:line, '\v^((( :: )@!.)* ):: .*$')
     elseif a:line =~ '^\s*\(=\|-\)>.*$'
-        return strlen(substitute(a:line, '^\(\s*\)\(=\|-\)>.*$', '\1', ''))
+        return PrefixLen(a:line, '^\(\s*\)\(=\|-\)>.*$')
     else
         return -1
     endif
 endfunction
 
-" Layout block introducers
-fun! BlockStarter(prefix, line)
-    return a:line =~ a:prefix . ' do$'
-      \ || a:line =~ a:prefix . ' \\case$'
-      \ || a:line =~ a:prefix . ' case .* of$'
+" Generate regex match for possibly nested layout symbols, e.g. do, if, let
+fun! PossiblyNested(keywords, end)
+    return '\v^(.* ' . a:end . '(( ' . a:keywords . ' )@! ))(( '
+         \ . a:keywords . ' )@!.)*'
 endfunction
 
 fun! NextIndent(line)
     " Indent data constructors and guards equally far
     if a:line =~ "^\s*|"
-        return strlen(substitute(a:line, "\v^(\s*)|.*$", '\1', ''))
+        return PrefixLen(a:line, "\v^(\s*)|.*$")
     " Indent basic ADT declaration
     elseif a:line =~ '^\s*data .* = .*$'
-        return strlen(substitute(a:line, '\(\s*data .* \)= .*$', '\1', ''))
+        return PrefixLen(a:line, '\(\s*data .* \)= .*$')
     " Indent right after module start for export list
     elseif a:line =~ '^module \S* ($'
       \ || a:line =~ '^module \S*$'
@@ -61,11 +67,9 @@ fun! NextIndent(line)
       \ || a:line =~ '^\s*=>'
         return SigIndent(a:line)
     " Check for the start of any common block
-    elseif BlockStarter('^.* =', a:line)
-      \ || BlockStarter('^.* ->', a:line)
-      \ || BlockStarter('^.* <-', a:line)
-      \ || BlockStarter('^\s*then', a:line)
-      \ || BlockStarter('^\s*else', a:line)
+    elseif a:line =~ '^.* do$'
+      \ || a:line =~ '^.* \\case$'
+      \ || a:line =~ '^.* case .* of$'
         return BaseIndent(a:line) + &shiftwidth
     " Check for line-continuation
     elseif a:line =~ '.* =$'
@@ -73,11 +77,14 @@ fun! NextIndent(line)
       \ || a:line =~ '.* <-$'
         return BaseIndent(a:line) + &shiftwidth/2
     " Check for MultiWayIf
-    elseif a:line =~ '^.*\sif |.*$'
-        return strlen(substitute(a:line, '^\(.*\sif \)|.*$', '\1', ''))
+    elseif a:line =~ PossiblyNested('(if|do)', 'if \|')
+        return PrefixLen(a:line, PossiblyNested('(if|do)', 'if \|')) - 2
     " Check for normal if
-    elseif a:line =~ '\v^.*\sif(( (then|else) )@!.)*$'
-        return BaseIndent(a:line) + &shiftwidth
+    elseif a:line =~ PossiblyNested('(if|do)', 'if')
+        return PrefixLen(a:line, PossiblyNested('(if|do)', 'if'))
+    " Check for do block
+    elseif a:line =~ PossiblyNested('(if|do)', 'do')
+        return PrefixLen(a:line, PossiblyNested('(if|do)', 'do'))
     " Check for declaration blocks
     elseif a:line =~ '\v^\s*(type|newtype|data) instance where$'
       \ || a:line =~ '\v^\s*(data|class|instance) .* where$'
