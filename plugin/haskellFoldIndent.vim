@@ -108,6 +108,8 @@ fun! HaskellIndent(lnum)
     let prevl = getline(a:lnum-1)
     if line =~ '^\s*->' || line =~ '^\s*=>'
         return SigIndent(prevl)
+    elseif line =~ '^\s*{' && prevl =~ '^\s*data'
+        return BaseIndent(prevl) + 5
     else
         return NextIndent(prevl)
     endif
@@ -118,7 +120,7 @@ fun! s:setHaskellFoldIndent()
     "setlocal foldtext=
     "setlocal foldmethod=expr
     setlocal indentexpr=HaskellIndent(v:lnum)
-    setlocal indentkeys=o,O,=->,==>
+    setlocal indentkeys=o,O,=->,==>,0{
 endfunction
 
 augroup HaskellFoldIndent
