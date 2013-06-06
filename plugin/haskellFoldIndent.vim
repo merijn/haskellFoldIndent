@@ -9,6 +9,8 @@ if exists("g:HaskellFoldIndent")
 endif
 let g:HaskellFoldIndent = 1
 
+let s:nonComment = '%(%(%(^|\s)--+\s)@!.)*'
+
 " Calculate the length of a prefix
 fun! PrefixLen(line, pattern)
     return strlen(substitute(a:line, a:pattern, '\1', ''))
@@ -22,10 +24,11 @@ endfunction
 
 " Figure out the indent level of a line
 fun! BaseIndent(line)
+    let matchLastDo =  '\v^(' . s:nonComment . ' do( do )@! )\S*(( do )@!.)*$'
     if a:line =~ '^\s*where '
         return PrefixLen(a:line, '\v^(\s*where ).*$')
-    elseif a:line =~ '\v^.* do( do )@! \S*(( do )@!.)*$'
-        return PrefixLen(a:line, '\v^(.* do( do )@! )\S*(( do )@!.)*$')
+    elseif a:line =~ matchLastDo
+        return PrefixLen(a:line, matchLastDo)
     else
         return PrefixLen(a:line, '\v^(\s*)\S.*$')
     endif
@@ -44,7 +47,7 @@ endfunction
 
 " Generate regex match for possibly nested layout symbols, e.g. do, if, let
 fun! PossiblyNested(keywords, end)
-    return '\v^(.* ' . a:end . '(( ' . a:keywords . ' )@! ))(( '
+    return '\v^(' . s:anyNonComment . ' ' . a:end . '(( ' . a:keywords . ' )@! ))(( '
          \ . a:keywords . ' )@!.)*'
 endfunction
 
@@ -67,14 +70,14 @@ fun! NextIndent(line)
       \ || a:line =~ '^\s*=>'
         return SigIndent(a:line)
     " Check for the start of any common block
-    elseif a:line =~ '^.* do$'
-      \ || a:line =~ '^.* \\case$'
-      \ || a:line =~ '^.* case .* of$'
+    elseif a:line =~ '^' . s:nonComment . ' do$'
+      \ || a:line =~ '^' . s:nonComment . ' \\case$'
+      \ || a:line =~ '^' . s:nonComment . ' case .* of$'
         return BaseIndent(a:line) + &shiftwidth
     " Check for line-continuation
-    elseif a:line =~ '.* =$'
-      \ || a:line =~ '.* ->$'
-      \ || a:line =~ '.* <-$'
+    elseif a:line =~ s:nonComment . ' =$'
+      \ || a:line =~ s:nonComment . ' ->$'
+      \ || a:line =~ s:nonComment . ' <-$'
         return BaseIndent(a:line) + &shiftwidth/2
     " Check for MultiWayIf
     elseif a:line =~ PossiblyNested('(if|do)', 'if \|')
@@ -95,9 +98,9 @@ fun! NextIndent(line)
         return BaseIndent(a:line) + 2*&shiftwidth
     " No equals sign or type annotation, so expect a guard.
     elseif a:line =~ '^\S' && !ValidTopLevel(a:line)
-      \ && a:line !~ '^.* = .*$'
-      \ && a:line !~ '^.* =$'
-      \ && a:line !~ '^.* :: .*$'
+      \ && a:line !~ '^' . s:nonComment . ' = .*$'
+      \ && a:line !~ '^' . s:nonComment . ' =$'
+      \ && a:line !~ '^' . s:nonComment . ' :: .*$'
         return BaseIndent(a:line) + &shiftwidth
     endif
     return BaseIndent(a:line)
