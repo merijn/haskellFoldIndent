@@ -43,7 +43,7 @@ Multiline data declarations will automatically line up with the equals sign::
 Typing a { on the first line after a declaration will align with the type
 name::
 
-    data Foo a b =
+    data Foo a b = Foo
          { someA :: a
          , someB :: b
          }
