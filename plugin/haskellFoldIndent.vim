@@ -70,14 +70,14 @@ fun! NextIndent(line)
       \ || a:line =~ '^\s*=>'
         return SigIndent(a:line)
     " Check for the start of any common block
-    elseif a:line =~ '^' . s:nonComment . ' do$'
-      \ || a:line =~ '^' . s:nonComment . ' \\case$'
-      \ || a:line =~ '^' . s:nonComment . ' case .* of$'
+    elseif a:line =~ '\v^' . s:nonComment . ' do$'
+      \ || a:line =~ '\v^' . s:nonComment . ' \\case$'
+      \ || a:line =~ '\v^' . s:nonComment . ' case .* of$'
         return BaseIndent(a:line) + &shiftwidth
     " Check for line-continuation
-    elseif a:line =~ s:nonComment . ' =$'
-      \ || a:line =~ s:nonComment . ' ->$'
-      \ || a:line =~ s:nonComment . ' <-$'
+    elseif a:line =~ '\v' . s:nonComment . ' =$'
+      \ || a:line =~ '\v' . s:nonComment . ' ->$'
+      \ || a:line =~ '\v' . s:nonComment . ' <-$'
         return BaseIndent(a:line) + &shiftwidth/2
     " Check for MultiWayIf
     elseif a:line =~ PossiblyNested('(if|do)', 'if \|')
@@ -98,9 +98,9 @@ fun! NextIndent(line)
         return BaseIndent(a:line) + 2*&shiftwidth
     " No equals sign or type annotation, so expect a guard.
     elseif a:line =~ '^\S' && !ValidTopLevel(a:line)
-      \ && a:line !~ '^' . s:nonComment . ' = .*$'
-      \ && a:line !~ '^' . s:nonComment . ' =$'
-      \ && a:line !~ '^' . s:nonComment . ' :: .*$'
+      \ && a:line !~ '\v^' . s:nonComment . ' = .*$'
+      \ && a:line !~ '\v^' . s:nonComment . ' =$'
+      \ && a:line !~ '\v^' . s:nonComment . ' :: .*$'
         return BaseIndent(a:line) + &shiftwidth
     endif
     return BaseIndent(a:line)
