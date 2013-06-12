@@ -47,8 +47,8 @@ endfunction
 
 " Generate regex match for possibly nested layout symbols, e.g. do, if, let
 fun! PossiblyNested(keywords, end)
-    return '\v^(' . s:anyNonComment . ' ' . a:end . '(( ' . a:keywords . ' )@! ))(( '
-         \ . a:keywords . ' )@!.)*'
+    return '\v^(' . s:nonComment . ' ' . a:end . '(( ' . a:keywords . ' )@! ))(( '
+         \ . a:keywords . ' )@!.)*$'
 endfunction
 
 fun! NextIndent(line)
@@ -75,15 +75,16 @@ fun! NextIndent(line)
       \ || a:line =~ '\v^' . s:nonComment . ' case .* of$'
         return BaseIndent(a:line) + &shiftwidth
     " Check for line-continuation
-    elseif a:line =~ '\v' . s:nonComment . ' =$'
+    elseif a:line =~ '\v' . s:nonComment . ' \=$'
       \ || a:line =~ '\v' . s:nonComment . ' ->$'
       \ || a:line =~ '\v' . s:nonComment . ' <-$'
+      \ || a:line =~ PossiblyNested('(if|do)', 'then')
         return BaseIndent(a:line) + &shiftwidth/2
     " Check for MultiWayIf
     elseif a:line =~ PossiblyNested('(if|do)', 'if \|')
         return PrefixLen(a:line, PossiblyNested('(if|do)', 'if \|')) - 2
     " Check for normal if
-    elseif a:line =~ PossiblyNested('(if|do)', 'if')
+    elseif a:line =~ PossiblyNested('(if|do|else)', 'if')
         return PrefixLen(a:line, PossiblyNested('(if|do)', 'if'))
     " Check for do block
     elseif a:line =~ PossiblyNested('(if|do)', 'do')

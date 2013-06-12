@@ -142,7 +142,6 @@ Not yet implemented
 Bugs/unintended behaviour:
    * let/in expressions
    * where clauses
-   * indent after inline if/then/else
    * handling multi-line type signatures inside record syntax declarations
    * handling record syntax in GADT syntax
    * resetting indentation after multi-line type signatures
