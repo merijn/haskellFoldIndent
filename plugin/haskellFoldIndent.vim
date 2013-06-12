@@ -112,10 +112,17 @@ fun! HaskellIndent(lnum)
     let prevl = getline(a:lnum-1)
     if line =~ '^\s*->' || line =~ '^\s*=>'
         return SigIndent(prevl)
-    elseif line =~ '^\s*{' && prevl =~ '^\s*data'
-        return BaseIndent(prevl) + 5
     elseif line =~ '^\s*{'
-        return BaseIndent(prevl) + &shiftwidth
+        " Record syntax ADT declaration
+        if prevl =~ '^\s*data'
+            return BaseIndent(prevl) + 5
+        " Record syntax GADT declaration
+        elseif prevl =~ '\v^' . s:nonComment . ' ::$'
+            return BaseIndent(prevl) + &shiftwidth
+        " Line continuation starting with record update syntax
+        else
+            return BaseIndent(prevl) + &shiftwidth/2
+        endif
     elseif line =~ '^\s*,'
         let lnum = a:lnum - 1
         while getline(lnum) !~ '\v^\s*(,|\{)'
