@@ -58,12 +58,33 @@ GADT declarations will indent by shiftwidth spaces, so with shiftwidth=4::
 Type Signatures
 ---------------
 
-Typing -> or => on the first line after a type signature will automatically
-line up with the :: symbol::
+Typing ``->`` or ``=>`` on the first line after a type signature will
+automatically line up with the ``::`` symbol::
 
     foo :: Monad m
         => (Double, Double)
         -> m Double
+
+This works for multiline type signatures in record syntax too. Starting a line
+with ``,`` after a multiline type signature will automatically dedent back to
+the proper level for the record syntax definition::
+
+    data Foo a b =
+         { someA :: a
+                 -> Int
+                 -> Double
+         , someB :: b
+         }
+
+And, of course, GADT record syntax works too::
+
+    data Foo a b where
+        FooBar ::
+            { someA :: a
+                    -> Int
+                    -> Double
+            , someB :: b
+            }
 
 Automatic Block Indent
 ----------------------
@@ -152,7 +173,6 @@ Not yet implemented
 Bugs/unintended behaviour:
    * let/in expressions
    * where clauses
-   * handling multi-line type signatures inside record syntax declarations
    * resetting indentation after multi-line type signatures
    * haskell syntax in multiline comments
    * line continuations triggered by (, [ and {

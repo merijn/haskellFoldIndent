@@ -116,6 +116,13 @@ fun! HaskellIndent(lnum)
         return BaseIndent(prevl) + 5
     elseif line =~ '^\s*{'
         return BaseIndent(prevl) + &shiftwidth
+    elseif line =~ '^\s*,'
+        let lnum = a:lnum - 1
+        while getline(lnum) !~ '\v^\s*(,|\{)'
+            let lnum -= 1
+        endwhile
+
+        return BaseIndent(getline(lnum))
     else
         return NextIndent(prevl)
     endif
@@ -126,7 +133,7 @@ fun! s:setHaskellFoldIndent()
     "setlocal foldtext=
     "setlocal foldmethod=expr
     setlocal indentexpr=HaskellIndent(v:lnum)
-    setlocal indentkeys=o,O,=->,==>,0{
+    setlocal indentkeys=o,O,=->,==>,0{,0,
 endfunction
 
 augroup HaskellFoldIndent
