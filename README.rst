@@ -7,7 +7,8 @@ A Vim plugin for better Haskell folding and auto-indenting.
 Installation
 ============
 
-If you use [pathogen.vim](https://github.com/tpope/vim-pathogen), simply run::
+If you use `pathogen.vim <https://github.com/tpope/vim-pathogen>`_, simply
+run::
 
     cd ~/.vim/bundle
     hg clone https://bitbucket.org/merijnv/haskellfoldindent
