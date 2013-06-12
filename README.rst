@@ -163,7 +163,3 @@ Broken, won't fix
 split case-of
     case-of where the case and of are on separate lines are not accounted for.
     This is ugly anyway, so don't do it.
-
-dangling else
-    An if/then/else should either be entirely on one line *or* have a separate
-    line for each if the three components.
