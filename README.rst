@@ -68,7 +68,7 @@ line up with the :: symbol::
 Automatic Block Indent
 ----------------------
 
-Ending a line with do, case X of, or \case (when using LambdaCase) will
+Ending a line with do, case X of, or \\case (when using LambdaCase) will
 increase the indent level by shiftwidth::
 
     foo a b = do
