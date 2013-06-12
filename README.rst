@@ -113,6 +113,15 @@ Type & data family blocks::
         Bar Int = {- ... -}
         Bar Char = {- ... -}
 
+GADT record syntax::
+
+    data Foo a where
+        Foo ::
+            { bar :: a
+            , baz :: Int
+            , quux :: Double
+            } -> Foo Int
+
 Foreign import/exports
 ----------------------
 
@@ -144,7 +153,6 @@ Bugs/unintended behaviour:
    * let/in expressions
    * where clauses
    * handling multi-line type signatures inside record syntax declarations
-   * handling record syntax in GADT syntax
    * resetting indentation after multi-line type signatures
    * haskell syntax in multiline comments
    * line continuations triggered by (, [ and {

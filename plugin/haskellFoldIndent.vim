@@ -114,6 +114,8 @@ fun! HaskellIndent(lnum)
         return SigIndent(prevl)
     elseif line =~ '^\s*{' && prevl =~ '^\s*data'
         return BaseIndent(prevl) + 5
+    elseif line =~ '^\s*{'
+        return BaseIndent(prevl) + &shiftwidth
     else
         return NextIndent(prevl)
     endif
