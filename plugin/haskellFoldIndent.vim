@@ -9,7 +9,10 @@ if exists("g:HaskellFoldIndent")
 endif
 let g:HaskellFoldIndent = 1
 
-let s:nonComment = '%(%(%(^|\s)--+\s)@!.)*'
+" Matches any whitespace followed by two or more - and then whitespace again
+let s:commentStart = '%(%(|\s)--+\s)'
+" Matches any number of non-comment characters
+let s:nonComment = '%(' . s:commentStart . '@!.)*'
 
 " Calculate the length of a prefix
 fun! PrefixLen(line, pattern)
@@ -45,10 +48,18 @@ fun! SigIndent(line)
     endif
 endfunction
 
-" Generate regex match for possibly nested layout symbols, e.g. do, if, let
-fun! PossiblyNested(keywords, end)
-    return '\v^(' . s:nonComment . ' ' . a:end . '(( ' . a:keywords . ' )@! ))(( '
-         \ . a:keywords . ' )@!.)*$'
+" Generate regex match which matches a keyword that is NOT followed by a set of
+" other keywords
+fun! NotFollowedBy(keyword, others)
+    return '\v^(' . s:nonComment . ' ' . a:keyword . '(( ' . a:others
+         \ . ' )@! ))(( ' . a:others . ' )@!.)*$'
+endfunction
+
+" Generate a regex match which matches a keyword that is NOT preceded by a set
+" of other keywords OR a comment start
+fun! NotPrecededBy(keyword, others)
+    return '\v^(%(%(%(' . a:others . ' )|' . s:commentStart . ')@!.)* '
+         \ . a:keyword . ' ).*$'
 endfunction
 
 fun! NextIndent(line)
@@ -75,20 +86,20 @@ fun! NextIndent(line)
       \ || a:line =~ '\v^' . s:nonComment . ' case .* of$'
         return BaseIndent(a:line) + &shiftwidth
     " Check for line-continuation
-    elseif a:line =~ '\v' . s:nonComment . ' \=$'
-      \ || a:line =~ '\v' . s:nonComment . ' ->$'
-      \ || a:line =~ '\v' . s:nonComment . ' <-$'
-      \ || a:line =~ PossiblyNested('(if|do)', 'then')
+    elseif a:line =~ '\v^' . s:nonComment . ' \=$'
+      \ || a:line =~ '\v^' . s:nonComment . ' ->$'
+      \ || a:line =~ '\v^' . s:nonComment . ' <-$'
+      \ || a:line =~ NotFollowedBy('then', '(if|do|else)')
         return BaseIndent(a:line) + &shiftwidth/2
     " Check for MultiWayIf
-    elseif a:line =~ PossiblyNested('(if|do)', 'if \|')
-        return PrefixLen(a:line, PossiblyNested('(if|do)', 'if \|')) - 2
+    elseif a:line =~ NotFollowedBy('if \|', '(if|do)')
+        return PrefixLen(a:line, NotFollowedBy('if \|', '(if|do)')) - 2
     " Check for normal if
-    elseif a:line =~ PossiblyNested('(if|do|else)', 'if')
-        return PrefixLen(a:line, PossiblyNested('(if|do)', 'if'))
+    elseif a:line =~ NotFollowedBy('if', '(if|do|else)')
+        return PrefixLen(a:line, NotFollowedBy('if', '(if|do)'))
     " Check for do block
-    elseif a:line =~ PossiblyNested('(if|do)', 'do')
-        return PrefixLen(a:line, PossiblyNested('(if|do)', 'do'))
+    elseif a:line =~ NotFollowedBy('do', '(if|do)')
+        return PrefixLen(a:line, NotFollowedBy('do', '(if|do)'))
     " Check for declaration blocks
     elseif a:line =~ '\v^\s*(type|newtype|data) instance where$'
       \ || a:line =~ '\v^\s*(data|class|instance) .* where$'
