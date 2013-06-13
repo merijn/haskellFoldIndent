@@ -227,18 +227,19 @@ Not yet implemented
 -------------------
 
 Bugs/unintended behaviour:
-   * reindenting ruins indentation of nested where clauses, let/in and
-     generally any block indentation
-   * resetting indentation after multi-line type signatures
+   * reindenting ruins indentation of nested where clauses and let/in
    * haskell syntax in multiline comments
+   * multiline comments in general
    * line continuations triggered by (, [ and {
-   * indentation after blank lines
-   * comments in between type signature lines
    * ??
 
 Desirable features:
    * "smart" tabbing/tab stops
    * "smart" backspace
+   * auto-dedent after a multiline type signature
+   * better handling of mixing Haddock comments and multiline type signatures
+     while writing
+   * better indentation adjustment after blank lines
    * ??
 
 Broken, won't fix
@@ -247,3 +248,7 @@ Broken, won't fix
 split case-of
     case-of where the case and of are on separate lines are not accounted for.
     This is ugly anyway, so don't do it.
+
+dangling else
+    An if/then/else should either be entirely on one line *or* have a separate
+    line for each if the three components.
