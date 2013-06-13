@@ -27,11 +27,10 @@ endfunction
 
 " Figure out the indent level of a line
 fun! BaseIndent(line)
-    let matchLastDo =  '\v^(' . s:nonComment . ' do( do )@! )\S*(( do )@!.)*$'
     if a:line =~ '^\s*where '
         return PrefixLen(a:line, '\v^(\s*where ).*$')
-    elseif a:line =~ matchLastDo
-        return PrefixLen(a:line, matchLastDo)
+    elseif a:line =~ NotFollowedBy('do', 'do')
+        return PrefixLen(a:line, NotFollowedBy('do', 'do'))
     else
         return PrefixLen(a:line, '\v^(\s*)\S.*$')
     endif
