@@ -29,8 +29,10 @@ endfunction
 fun! BaseIndent(line)
     if a:line =~ '^\s*where '
         return PrefixLen(a:line, '\v^(\s*where ).*$')
-    elseif a:line =~ NotFollowedBy('do', 'do')
-        return PrefixLen(a:line, NotFollowedBy('do', 'do'))
+    elseif a:line =~ NotFollowedBy('do', '(do|let)')
+        return PrefixLen(a:line, NotFollowedBy('do', '(do|let)'))
+    elseif a:line =~ NotFollowedBy('let', '(do|let)')
+        return PrefixLen(a:line, NotFollowedBy('let', '(do|let)'))
     else
         return PrefixLen(a:line, '\v^(\s*)\S.*$')
     endif
@@ -83,6 +85,7 @@ fun! NextIndent(line)
         return SigIndent(a:line)
     " Check for the start of any common block
     elseif a:line =~ '\v^' . s:nonComment . ' do$'
+      \ || a:line =~ '\v^' . s:nonComment . ' let$'
       \ || a:line =~ '\v^' . s:nonComment . ' \\case$'
       \ || a:line =~ '\v^' . s:nonComment . ' case .* of$'
         return BaseIndent(a:line) + &shiftwidth
@@ -93,11 +96,11 @@ fun! NextIndent(line)
       \ || a:line =~ NotFollowedBy('then', '(if|do|else)')
         return BaseIndent(a:line) + &shiftwidth/2
     " Check for MultiWayIf
-    elseif a:line =~ NotFollowedBy('if \|', '(if|do)')
-        return PrefixLen(a:line, NotFollowedBy('if \|', '(if|do)')) - 2
+    elseif a:line =~ NotFollowedBy('if \|', '(if|do|let)')
+        return PrefixLen(a:line, NotFollowedBy('if \|', '(if|do|let)')) - 2
     " Check for normal if
-    elseif a:line =~ NotFollowedBy('if', '(if|do|else)')
-        return PrefixLen(a:line, NotFollowedBy('if', '(if|do|else)'))
+    elseif a:line =~ NotFollowedBy('if', '(if|do|else|let)')
+        return PrefixLen(a:line, NotFollowedBy('if', '(if|do|else|let)'))
     " Check for declaration blocks
     elseif a:line =~ '\v^\s*(type|newtype|data) instance where$'
       \ || a:line =~ '\v^\s*(data|class|instance) .* where$'
@@ -158,6 +161,19 @@ fun! HaskellIndent(lnum)
         else
             return BaseIndent(getline(lnum)) + &shiftwidth
         endif
+    elseif line =~ '^\s*in '
+        let lnum = a:lnum - 1
+        while lnum > 0
+         \ && getline(lnum) !~ NotFollowedBy('let', 'let')
+         \ && getline(lnum) !~ '\v^' . s:nonComment . ' let$'
+            let lnum -= 1
+        endwhile
+
+        if lnum > 0 && getline(lnum) !~ '^.* let$'
+            return BaseIndent(getline(lnum)) - 4
+        else
+            return BaseIndent(prevl)
+        endif
     else
         return NextIndent(prevl)
     endif
@@ -168,7 +184,7 @@ fun! s:setHaskellFoldIndent()
     "setlocal foldtext=
     "setlocal foldmethod=expr
     setlocal indentexpr=HaskellIndent(v:lnum)
-    setlocal indentkeys=o,O,0=->,0==>,0{,0,,0=where\ ,0=where
+    setlocal indentkeys=o,O,0=->,0==>,0{,0,,0=where\ ,0=where,0=in\ 
 endfunction
 
 augroup HaskellFoldIndent

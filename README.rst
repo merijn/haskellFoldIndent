@@ -144,6 +144,25 @@ add more definitions to the where clause that defines ``baz``)::
         where baz = {- something -}
                   where xyzzy = {- something -}
 
+Any ``let`` declarations in ``do`` blocks and ``let ... in`` expressions are
+also handled. If the definitions following a ``let`` start on the same line,
+then the ``in`` will be indented to match the indentation of ``let``, else
+``in`` will have the same indentation as the line above it::
+
+    foo a b = do
+        let bar = 1
+            baz = 2
+        return a
+
+    foo a b = let
+        bar = 1
+        baz = 2
+        in bar + baz
+
+    foo a b = let bar = 1
+                  baz = 2
+              in bar + baz
+
 The automatic block indentation also handles...
 
 Class and instance definitions::
@@ -208,9 +227,8 @@ Not yet implemented
 -------------------
 
 Bugs/unintended behaviour:
-   * nested where clauses only indented to the level of the latest where
-     clause.
-   * let/in expressions
+   * reindenting ruins indentation of nested where clauses, let/in and
+     generally any block indentation
    * resetting indentation after multi-line type signatures
    * haskell syntax in multiline comments
    * line continuations triggered by (, [ and {
