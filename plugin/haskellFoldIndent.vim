@@ -97,10 +97,7 @@ fun! NextIndent(line)
         return PrefixLen(a:line, NotFollowedBy('if \|', '(if|do)')) - 2
     " Check for normal if
     elseif a:line =~ NotFollowedBy('if', '(if|do|else)')
-        return PrefixLen(a:line, NotFollowedBy('if', '(if|do)'))
-    " Check for do block
-    elseif a:line =~ NotFollowedBy('do', '(if|do)')
-        return PrefixLen(a:line, NotFollowedBy('do', '(if|do)'))
+        return PrefixLen(a:line, NotFollowedBy('if', '(if|do|else)'))
     " Check for declaration blocks
     elseif a:line =~ '\v^\s*(type|newtype|data) instance where$'
       \ || a:line =~ '\v^\s*(data|class|instance) .* where$'
@@ -135,21 +132,28 @@ fun! HaskellIndent(lnum)
         else
             return BaseIndent(prevl) + &shiftwidth/2
         endif
+    " Search for the first line that starts with , or { and indent equally far
     elseif line =~ '^\s*,'
         let lnum = a:lnum - 1
-        while getline(lnum) !~ '\v^\s*(,|\{)'
+        while lnum > 0 && getline(lnum) !~ '\v^\s*(,|\{)'
             let lnum -= 1
         endwhile
 
-        return BaseIndent(getline(lnum))
+        return lnum ? BaseIndent(getline(lnum)) : BaseIndent(prevl)
+    " If the line starts with where, find the definition the where belongs to
+    " and indent based on that
     elseif line =~ '^\s*where'
         let lnum = a:lnum - 1
-        while getline(lnum) !~ NotPrecededBy('\=', 'let')
-         \ && getline(lnum) !~ '^.* =$'
+        while lnum > 0
+         \ && getline(lnum) !~ NotPrecededBy('\=', 'let')
+         \ && getline(lnum) !~ '\v^' . s:nonComment . ' =$'
             let lnum -= 1
         endwhile
 
-        if line =~ '^\s*where$' || BaseIndent(getline(lnum)) + &shiftwidth == BaseIndent(prevl)
+        if lnum == 0
+            return BaseIndent(prevl)
+        elseif line =~ '^\s*where$'
+          \ || BaseIndent(getline(lnum)) + &shiftwidth == BaseIndent(prevl)
             return BaseIndent(getline(lnum)) + &shiftwidth/2
         else
             return BaseIndent(getline(lnum)) + &shiftwidth
