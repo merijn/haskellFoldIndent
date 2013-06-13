@@ -76,6 +76,8 @@ fun! NextIndent(line)
     " Dedent after end of module export list
     elseif a:line =~ '\s*) where$'
         return 0
+    elseif a:line =~ '^\s*where$'
+        return BaseIndent(a:line) + (&shiftwidth + 1)/2
     " Arrow at the start of line means indented type signature
     elseif a:line =~ '^\s*->'
       \ || a:line =~ '^\s*=>'
@@ -141,6 +143,18 @@ fun! HaskellIndent(lnum)
         endwhile
 
         return BaseIndent(getline(lnum))
+    elseif line =~ '^\s*where'
+        let lnum = a:lnum - 1
+        while getline(lnum) !~ NotPrecededBy('\=', 'let')
+         \ && getline(lnum) !~ '^.* =$'
+            let lnum -= 1
+        endwhile
+
+        if line =~ '^\s*where$' || BaseIndent(getline(lnum)) + &shiftwidth == BaseIndent(prevl)
+            return BaseIndent(getline(lnum)) + &shiftwidth/2
+        else
+            return BaseIndent(getline(lnum)) + &shiftwidth
+        endif
     else
         return NextIndent(prevl)
     endif
@@ -151,7 +165,7 @@ fun! s:setHaskellFoldIndent()
     "setlocal foldtext=
     "setlocal foldmethod=expr
     setlocal indentexpr=HaskellIndent(v:lnum)
-    setlocal indentkeys=o,O,=->,==>,0{,0,
+    setlocal indentkeys=o,O,0=->,0==>,0{,0,,0=where\ ,0=where
 endfunction
 
 augroup HaskellFoldIndent

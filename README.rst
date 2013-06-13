@@ -25,9 +25,9 @@ Using the plugin
 ================
 
 As of right now, there is no configuration for the plugin. By default the
-plugin will use the shiftwidth value from your vim configuration for indenting
-new blocks. Continuations of previous lines will be indented by half your
-shiftwidth.
+plugin will use the ``shiftwidth`` value from your vim configuration for
+indenting new blocks. Continuations of previous lines will be indented by half
+your ``shiftwidth``.
 
 Features & Examples
 ===================
@@ -41,7 +41,7 @@ Multiline data declarations will automatically line up with the equals sign::
                  | Bar b
                  | Baz a b
 
-Typing a { on the first line after a declaration will align with the type
+Typing a ``{`` on the first line after a declaration will align with the type
 name::
 
     data Foo a b = Foo
@@ -49,7 +49,8 @@ name::
          , someB :: b
          }
 
-GADT declarations will indent by shiftwidth spaces, so with shiftwidth=4::
+GADT declarations will indent by ``shiftwidth`` spaces, so with
+``shiftwidth=4``::
 
     data Foo a b where
         Bar :: a -> b -> Foo a b
@@ -89,8 +90,8 @@ And, of course, GADT record syntax works too::
 Automatic Block Indent
 ----------------------
 
-Ending a line with do, case X of, or \\case (when using LambdaCase) will
-increase the indent level by shiftwidth::
+Ending a line with ``do``, ``case X of``, or ``\case`` (when using LambdaCase)
+will increase the indent level by ``shiftwidth``::
 
     foo a b = do
         return (a + b)
@@ -106,6 +107,42 @@ increase the indent level by shiftwidth::
     foo = do
         bar <- do
             blah blah
+
+Since there is no Vim support for precognition yet, there is no real way to
+know which definition a ``where`` block belongs to, especially when you're
+using ``where`` blocks for functions defined inside ``where`` blocks. To
+simplify things it is assumed that a ``where`` block belongs to the first
+non-``let`` definition above it.
+
+A ``where`` block followed by a definition on the same line is indented
+``shiftwidt`` spaces, unless that would line it up directly with the line above
+it, e.g. if the line above is a ``do`` block, in which case it is indented by
+half of ``shiftwidth``. If the ``where`` is on a line of its own, it is also
+indented by half of ``shiftwidth``::
+
+    foo a b = bar baz
+        where bar = {- something -}
+              baz = {- something -}
+
+    foo a b = do
+        bar
+        baz
+      where bar = {- something -}
+            baz = {- something -}
+
+    foo a b = do
+        bar
+        baz
+      where
+        bar = {- something -}
+        baz = {- something -}
+
+And it works with nested ``where``'s too (provided you don't want to dedent and
+add more definitions to the where clause that defines ``baz``)::
+
+    foo a b = a + b
+        where baz = {- something -}
+                  where xyzzy = {- something -}
 
 The automatic block indentation also handles...
 
@@ -171,8 +208,9 @@ Not yet implemented
 -------------------
 
 Bugs/unintended behaviour:
+   * nested where clauses only indented to the level of the latest where
+     clause.
    * let/in expressions
-   * where clauses
    * resetting indentation after multi-line type signatures
    * haskell syntax in multiline comments
    * line continuations triggered by (, [ and {
