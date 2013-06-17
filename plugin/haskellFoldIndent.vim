@@ -121,7 +121,7 @@ fun! NextIndent(line)
       \ && a:line !~ '\v^\s*--+(\s|$)'
         return BaseIndent(a:line) + &shiftwidth
     endif
-    return BaseIndent(a:line)
+    return -1
 endfunction
 
 fun! s:BraceIndent(prevl)
@@ -228,14 +228,6 @@ fun! HaskellIndent(lnum)
         endwhile
 
         return lnum ? BaseIndent(getline(lnum)) : -1
-    " Maintain the previous indentation for non-comment and non-definition
-    " lines, don't readjust lines that have a different indent already
-    elseif prevl =~ '^$'
-        if line =~ '^\s*\S'
-            return s:PrefixLen(line, '\v^(\s*)\S.*$')
-        endif
-
-        return NextIndent(getline(prevnonblank(a:lnum - 1)))
     else
         return NextIndent(prevl)
     endif
@@ -247,6 +239,7 @@ fun! s:setHaskellFoldIndent()
     "setlocal foldmethod=expr
     setlocal indentexpr=HaskellIndent(v:lnum)
     setlocal indentkeys=o,O,0=->,0==>,0={\ ,0,,0=where\ ,0=where,0=in\ 
+    setlocal autoindent
 endfunction
 
 augroup HaskellFoldIndent
