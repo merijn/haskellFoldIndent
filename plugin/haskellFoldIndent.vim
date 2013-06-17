@@ -81,9 +81,6 @@ fun! NextIndent(line)
     elseif a:line =~ '^module \S* ($'
       \ || a:line =~ '^module \S*$'
         return &shiftwidth
-    " Dedent after end of module export list
-    elseif a:line =~ '\s*) where$'
-        return 0
     elseif a:line =~ '^\s*where$'
         return BaseIndent(a:line) + (&shiftwidth + 1)/2
     " Arrow at the start of line means indented type signature
@@ -112,6 +109,9 @@ fun! NextIndent(line)
       \ || a:line =~ '\v^\s*(data|class|instance) .* where$'
       \ || a:line =~ '\v^\s*foreign (import|export) .* "[^"]*"$'
         return BaseIndent(a:line) + &shiftwidth
+    " Dedent after end of module export list
+    elseif a:line =~ '\s*) where$'
+        return 0
     " Indent hiding declarations
     elseif a:line =~ '\v\s*import( qualified)? \S*( as \S*)? hiding$'
         return BaseIndent(a:line) + 2*&shiftwidth
