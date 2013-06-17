@@ -9,6 +9,10 @@ if exists("g:HaskellFoldIndent")
 endif
 let g:HaskellFoldIndent = 1
 
+if !exists("g:HaskellFoldIndent_AlignDataDecl")
+    let g:HaskellFoldIndent_AlignDataDecl = 1
+endif
+
 " Matches any whitespace followed by two or more - and then whitespace again
 let s:commentStart = '%(%(|\s)--+\s)'
 " Matches any number of non-comment characters
@@ -76,7 +80,11 @@ fun! NextIndent(line)
         return s:PrefixLen(a:line, "\v^(\s*)|.*$")
     " Indent basic ADT declaration
     elseif a:line =~ '^\s*data .* = .*$'
-        return s:PrefixLen(a:line, '\(\s*data .* \)= .*$')
+        if g:HaskellFoldIndent_AlignDataDecl
+            return s:PrefixLen(a:line, '\(\s*data .* \)= .*$')
+        else
+            return &shiftwidth
+        endif
     " Indent right after module start for export list
     elseif a:line =~ '^module \S* ($'
       \ || a:line =~ '^module \S*$'
