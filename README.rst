@@ -227,7 +227,6 @@ Not yet implemented
 -------------------
 
 Bugs/unintended behaviour:
-   * reindenting ruins indentation of nested where clauses and let/in
    * haskell syntax in multiline comments
    * multiline comments in general
    * line continuations triggered by (, [ and {
@@ -239,7 +238,6 @@ Desirable features:
    * auto-dedent after a multiline type signature
    * better handling of mixing Haddock comments and multiline type signatures
      while writing
-   * better indentation adjustment after blank lines
    * ??
 
 Broken, won't fix

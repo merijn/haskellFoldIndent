@@ -26,7 +26,7 @@ endfunction
 " Used to check whether something is a top level declaration
 fun! s:ValidTopLevel(line)
     return a:line =~ '\v^(data|newtype|type|foreign|import|module|class|infix)'
-      \ || a:line =~ '\v^(instance|default|\$\(|\{-)'
+      \ || a:line =~ '\v^(instance|default|\$\(|\{-|deriving)'
 endfunction
 
 " Used to check whether something is function/value definition
@@ -79,7 +79,7 @@ fun! NextIndent(line)
     if a:line =~ "^\s*|"
         return s:PrefixLen(a:line, "\v^(\s*)|.*$")
     " Indent basic ADT declaration
-    elseif a:line =~ '^\s*data .* = .*$'
+    elseif a:line =~ '\v^\s*data .* \= (( deriving )@!.)*$'
         if g:HaskellFoldIndent_AlignDataDecl
             return s:PrefixLen(a:line, '\(\s*data .* \)= .*$')
         else
@@ -91,6 +91,8 @@ fun! NextIndent(line)
         return &shiftwidth
     elseif a:line =~ '^\s*where$'
         return BaseIndent(a:line) + (&shiftwidth + 1)/2
+    elseif a:line =~ '^\s*where .*$'
+        return BaseIndent(a:line)
     " Arrow at the start of line means indented type signature
     elseif a:line =~ '^\s*->'
       \ || a:line =~ '^\s*=>'
@@ -100,6 +102,7 @@ fun! NextIndent(line)
       \ || a:line =~ '\v^' . s:nonComment . ' let$'
       \ || a:line =~ '\v^' . s:nonComment . ' \\case$'
       \ || a:line =~ '\v^' . s:nonComment . ' case .* of$'
+      \ || a:line =~ '\v^' . s:nonComment . ' where$'
         return BaseIndent(a:line) + &shiftwidth
     " Check for line-continuation
     elseif a:line =~ '\v^' . s:nonComment . ' \=$'
