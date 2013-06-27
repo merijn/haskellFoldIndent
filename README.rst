@@ -35,11 +35,23 @@ Features & Examples
 Data declarations
 -----------------
 
-Multiline data declarations will automatically line up with the equals sign::
+Multiline data declarations will automatically (optionally!) line up with the
+equals sign::
 
     data Foo a b = Foo a
                  | Bar b
                  | Baz a b
+
+This behaviour can be disabled by adding the following to your ``.vimrc``::
+
+    let g:HaskellFoldIndent_AlignDataDecl = 1
+
+This will indent data declarations by ``shiftwidth`` instead of aligning with
+the ``=`` character::
+
+    data Foo a b = Foo a
+        | Bar b
+        | Baz a b
 
 Typing a ``{`` on the first line after a declaration will align with the type
 name::
