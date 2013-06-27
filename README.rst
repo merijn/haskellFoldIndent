@@ -97,7 +97,7 @@ And, of course, GADT record syntax works too::
                     -> Int
                     -> Double
             , someB :: b
-            }
+            } -> Foo a b
 
 Automatic Block Indent
 ----------------------
