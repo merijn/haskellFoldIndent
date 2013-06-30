@@ -90,6 +90,7 @@ fun! NextIndent(line)
       \ || a:line =~ '^module \S*$'
         return &shiftwidth
     elseif a:line =~ '^module .* where$'
+      \ || a:line =~ '^\s*) where$'
         return 0
     elseif a:line =~ '^\s*where$'
         return BaseIndent(a:line) + (&shiftwidth + 1)/2
