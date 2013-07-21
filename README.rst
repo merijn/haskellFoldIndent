@@ -44,7 +44,7 @@ equals sign::
 
 This behaviour can be disabled by adding the following to your ``.vimrc``::
 
-    let g:HaskellFoldIndent_AlignDataDecl = 1
+    let g:HaskellFoldIndent_AlignDataDecl = 0
 
 This will indent data declarations by ``shiftwidth`` instead of aligning with
 the ``=`` character::
