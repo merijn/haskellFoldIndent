@@ -4,10 +4,10 @@
 " Version:      1.0
 " License:      GNU General Public License v3.0
 " =============================================================================
-if exists("g:HaskellFoldIndent")
+if exists("g:did_indent")
     finish
 endif
-let g:HaskellFoldIndent = 1
+let g:did_indent = 1
 
 if !exists("g:HaskellFoldIndent_AlignDataDecl")
     let g:HaskellFoldIndent_AlignDataDecl = 1
